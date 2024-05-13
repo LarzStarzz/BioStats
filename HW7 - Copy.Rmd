@@ -1,0 +1,93 @@
+---
+title: "Simulation-based inference in the Analysis of Variance"
+output: html_document
+date: "2023-10-13"
+---
+
+```{r setup, include=FALSE}
+```
+
+```{r file}
+set.seed(12345)
+amess = read.csv('amess.csv', header = TRUE)
+amess$treatmnt <- factor(amess$treatmnt, levels = 1:3, labels = c("50% N2O and 50% O2 continuously for 24 hours", "50% N2O and 50% O2 during the operation", "No N2O but 35-50% O2 continuously for 24 hours"))
+```
+
+Treatment 1: 50% N2O and 50% O2 continuously for 24 hours
+
+Treatment 2: 50% N2O and 50% O2 during the operation
+
+Treatment 3: No N2O but 35-50% O2 continuously for 24 hours
+
+# Hypothesis
+
+Global Null Hypothesis: There is no difference in folate levels between the three different treatments.
+
+Alternative Hypothesis: There is a significant difference in means between at least on pair of treatments.
+
+
+# Permutation F-test
+
+```{r ANOVA}
+anova_test <- aov(folate ~ treatmnt, data = amess)
+summary(anova_test)
+
+```
+
+
+```{r permutation}
+
+num_perm <- 10000  
+
+F_stats <- numeric(num_perm)
+
+for (i in 1:num_perm) {
+  perm_l <- sample(amess$treatmnt)
+  
+  perm_anova <- aov(folate ~ perm_l, data = amess)
+  
+  F_stats[i] <- summary(perm_anova)[[1]][1, 4]  # F-statistic
+}
+obs_F <- summary(anova_test)[[1]][1, 4]
+
+p_value <- sum(F_stats >= obs_F) / num_perm
+
+rej_region = qf(0.95, 2,15)
+
+
+```
+
+```{r print , echo = FALSE}
+cat("Rejection Region:", rej_region, "\n")
+cat("Observed F-statistic:", obs_F, "\n")
+cat("p-value:", p_value, "\n")
+```
+
+The observed F-statistic is calculated to be 3.711 and the Rejection region for 95% is 3.682. Based of on the F-statistic being to the right (bigger in value) of the rejection region threshold, we can reject the null hypothesis. The F-statistic being so close to the rejection region threshold suggest that there is a meaningful difference between the groups.
+
+
+```{r super cool graph, echo = FALSE}
+hist(F_stats,
+     main = "Permutation Test for F-statistic", 
+     xlab = "F-statistic",
+     xlim = c(0, 12),
+     breaks = 30)
+
+abline(v = obs_F, col = "red")
+abline(v = rej_region, lty=2)
+
+legend("topright", lty=c(1,2),
+       legend=c("Obs F-statistic", "95% perm dist."), 
+       col=c("red", "black"))
+
+```
+
+```{r empirical two sided p values}
+p_value_two_sided <- 2 * min(sum(F_stats >= obs_F), sum(F_stats <= obs_F)) / num_perm
+
+cat("Two-sided p-value:", p_value_two_sided, "\n")
+
+```
+
+The two sided p-value is two times and much as the already calculated p-value above (p-value = 0.0446). The calculated two-sided variable being 0.0892 is higher than the 0.05 alpha level. This mean that based off of this we can not reject the null hypothesis. This is a conflicting result when compared to the permutation tests we did where we did come to the conclusion to reject the null hypothesis. After coming to a contradicting conclusion when considering both test we can not come to an overall conclusion on the null hypothesis. Conducting further testing using different methods might be necessary in this case, as it would give a more conclusive answer. 
+

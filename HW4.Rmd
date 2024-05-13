@@ -1,0 +1,93 @@
+---
+title: "The Bootstrap"
+output: html_document
+date: "2023-09-22"
+---
+
+
+```{r setup, include=FALSE}
+
+```
+(Opens and reads the file "bodyfat.csv", Assigns variable names to each column)
+```{r initialization}
+set.seed(12345)
+bodyfat=read.csv('bodyfat.csv', header=FALSE)
+colnames(bodyfat) <- c('fatpercent', 'gender')
+
+males <- bodyfat$fatpercent[bodyfat$gender == 1]
+females <- bodyfat$fatpercent[bodyfat$gender == 2]
+```
+
+# # Two-sided empirical Confidence Interval 
+
+
+```{r via bootstrap}
+bootstraps <- 10000
+bootstrapMeansDiff <- numeric(bootstraps)
+
+for (i in 1:bootstraps) {
+  bootstrapMales <- sample(males, replace = TRUE)
+  bootstrapFemales <- sample(females, replace = TRUE)
+  
+  bootstrapMeansDiff[i] <- mean(bootstrapMales) - mean(bootstrapFemales)
+  
+}
+empirical_ci <- quantile(bootstrapMeansDiff, c(0.025, 0.975))
+
+cat("Empirical CI:", empirical_ci, "\n")
+
+```
+
+Via the bootstrap distribution, the empirical confidence interval of comparing male and female body fat percentages are (-12.12, -2.57).
+
+# # Two-sided Parametric Confidence Interval 
+
+```{r through bootstrap}
+male_mean <- mean(males)
+female_mean <- mean(females)
+
+male_var <- var(males)
+female_var <- var(females)
+
+n_males <- length(males)
+n_females <- length(females)
+
+se <- sqrt((male_var / n_males) + (female_var / n_females))
+
+t_stat <- (male_mean - female_mean) / se
+
+df <- n_males + n_females - 2
+
+t_lower <- qt(0.025, df)
+t_upper <- qt(0.975, df)
+
+
+parametric_ci <- c((male_mean - female_mean) + (t_lower * se),
+                   (male_mean - female_mean) + (t_upper * se))
+
+cat("Parametric CI::", parametric_ci, "\n")
+```
+
+Through the bootstrap distribution, the parametric confidence interval of comparing male and female body fat percentages are (-12.61, -2.06).
+
+# # Comparison
+
+In the graph below is the distribution of the means of body fat percentages. The red line represent the empirical method, and the green represents the parametric. When looking at just the data the difference in intervals is little but when looking at the graph we can see a more clear difference between the two. As we are using two different methods there is bound to be a difference between the two. When looking at both methods, zero falls outside both intervals. Based on this, we can conclude that there is a significant difference between the genders and their body fat percentages.
+
+```{r graph}
+ci_lower <- quantile(bootstrapMeansDiff, 0.025)
+ci_upper <- quantile(bootstrapMeansDiff, 0.975)
+
+hist(bootstrapMeansDiff, main = "Bootstrap Distribution",
+     xlab = "Difference in Body Fat%", ylab = "Density", freq=FALSE,
+     col = "lightsteelblue1")
+abline(v = c(ci_lower, ci_upper), col = "red", lwd = 2)
+abline(v = c(parametric_ci[1], parametric_ci[2]), col = "green", lwd = 2)
+legend("topright", legend = c("Empirical", "Parametric"), col = c("red", "green"), lwd = 2)
+
+```
+
+
+```{r perm diff}
+
+```

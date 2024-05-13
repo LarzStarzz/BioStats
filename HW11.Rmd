@@ -1,0 +1,156 @@
+---
+title: "HW11"
+output: html_document
+date: "2023-10-27"
+---
+
+```{r data setup, echo = FALSE}
+monica3 <- read.csv("Monica3.csv")
+
+colnames(monica3) <- c('hdl', 'age', 'alcohol', 'chol', 'fiber')
+
+monica3$hdl <- as.numeric(monica3$hdl)
+
+monica3$alcohol <- as.numeric(monica3$alcohol)
+
+#monica3$chol <- as.numeric(monica3$chol)
+
+```
+
+The graph below is a grid of scatter plot graphs using the variables age, alcohol and cholesterol. The labels on the top correspond with the x-axis and the labels and the left correspond with the y-axis. 
+
+```{r 3x3 grid, echo = FALSE}
+
+library(ggplot2)
+
+set.seed(123)
+monica3 <- data.frame(
+  age = rnorm(100, mean = 40, sd = 10),
+  alcohol = rnorm(100, mean = 20, sd = 5),
+  cholesterol = rnorm(100, mean = 180, sd = 30)
+)
+
+grid_plots <- list(
+  
+  ggplot(monica3, aes(x = alcohol, y = alcohol)) +
+    geom_point() +
+    labs(title = "Alcohol", x = "", y = "Alcohol"),
+  
+  ggplot(monica3, aes(x = cholesterol, y = alcohol)) +
+    geom_point() +
+    labs(title = "Cholesterol", x = "", y = ""),
+  
+  ggplot(monica3, aes(x = age, y = alcohol)) +
+    geom_point() +
+    labs(title = "Age", x = "", y = ""),
+  
+  ggplot(monica3, aes(x = alcohol, y = cholesterol)) +
+    geom_point() +
+    labs(title = "", x = "", y = "Cholesterol"),
+  
+  ggplot(monica3, aes(x = cholesterol, y = cholesterol)) +
+    geom_point() +
+    labs(title = "", x = "", y = ""),
+  
+  ggplot(monica3, aes(x = age, y = cholesterol)) +
+    geom_point() +
+    labs(title = "", x = "", y = ""),
+  
+  ggplot(monica3, aes(x = alcohol, y = age)) +
+    geom_point() +
+    labs(title = "", x = "Alcohol", y = "Age"),
+  
+  ggplot(monica3, aes(x = cholesterol, y = age)) +
+    geom_point() +
+    labs(title = "", x = "Cholesterol", y = ""),
+
+  ggplot(monica3, aes(x = age, y = age)) +
+    geom_point() +
+    labs(title = "", x = "Age", y = "")
+)
+
+library(gridExtra)
+grid.arrange(grobs = grid_plots, ncol = 3)
+
+
+```
+
+_____________________________________________________________________________________________________________________________________________________________
+
+# Linear Regression
+
+**Cholesterol + Age:** The dependent variable is Cholesterol and the independent variable is Age. The coefficient for age is -.4033 with a p-value of 0.2 which makes it not statistically significant. The r squared value of 0.01669 indicates that there is only a small variability is cholesterol level. Based off these, there is no significant linear relationship between cholesterol and age.
+
+**Alcohol + Age:** The dependent variable is Alcohol and the independent variable is age. The coefficient for for age -0.02624 with a p-value of 0.625 which makes it not statistically significant. The r squared value of 0.002453 indicates that there is only a small variability is ages. Based off these, there is no significant linear relationship between alcohol and age.
+
+**Cholesterol + Alcohol:** The dependent variable is cholesterol and the independent variable is alcohol. The coefficient for alcohol is 0.1802 with a p-value of 0.763 which makes it not statistically significant. The r squared value of 0.0009351 is very low and indicates that alcohol has a very little variability in cholesterol level. Based on this, there is no significant linear relationship between cholesterol and alcohol.
+
+
+```{r linear regression}
+
+model_chol_age <- lm(cholesterol ~ age, data = monica3)
+summary(model_chol_age)
+
+model_alc_age <- lm(alcohol ~ age, data = monica3)
+summary(model_alc_age)
+
+model_chol_alc <- lm(cholesterol ~ alcohol, data = monica3)
+summary(model_chol_alc)
+
+```
+_________________________________________________________________________________________________________________________________________________________________________________
+
+# Directed Acyclic Graph
+
+The DAG below visualizes the relationships between each of the three variables. As we can see Age has a direct relationship with both cholesterol and alcohol. There is also a direct relationship between alcohol and cholesterol. When interpreting each interrelationship, we can imply the following. As age increases the rate of alcohol consumption also change. Age is a cause in the change of cholesterol levels. Alcohol is a cuase in change of cholesterol levels.
+
+```{r DAG}
+library(dagitty)
+
+dag <- dagitty('dag {
+  Age -> Alcohol
+  Alcohol -> Cholesterol
+  Age -> Cholesterol
+}')
+
+plot(dag)
+
+```
+___________________________________________________________________________________________________________________________________
+
+# Multivariable Regression
+
+Based on the DAG graph, the model for the multivarible regression looks at how alcohol and age affect the cholesterol levels. The coefficient for alcohol is 0.1429 and the p-value is  0.810, which means that alcohol and cholesterol don't have a statistically significant linear relationship. The coefficient for age is -0.3995 and the p-value is 0.207, which means that age and cholesterol don't have a statistically significant linear relationship. There is no linear relationship between cholesterol and its affecting factors of age or alcohol.
+
+```{r multivarible regression}
+
+model_multivariable <- lm(cholesterol ~ alcohol + age, data = monica3)
+summary(model_multivariable)
+
+```
+
+When comparing with previous steps, the coefficients and p-value remained relatively unchanged for alcohol. Same thing goes for age, the coefficients and p-values remain relatively unchanged. The lack of change for results with alcohol may suggest that its not a factors in the changes of cholesterol levels. When age is in or not included is the determining factors, the results do not change. This suggest that age is not a confounding factor, if it was we would see a change in influence in the alcohol or cholesterol coefficients. When looking at the relationship of alcohol and cholesterol when age is present, it does not significantly effect the end results of the relationship. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

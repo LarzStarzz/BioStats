@@ -1,0 +1,37 @@
+---
+title: "HW1Q2"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-09-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r cars}
+set.seed(1234567)
+
+s<-1000
+n<-21
+
+expo<-rexp(s)
+meanArray<-array(0, dim=s)
+for(i in 1:s){
+    x<-sample(expo,n,replace=FALSE)
+    meanArray[i]<-mean(x)
+   
+}
+hist(meanArray, main="", xlab="mean scores", freq=FALSE)
+lines(seq(0,2,0.01), dnorm(seq(0,2,0.01), mean(meanArray), sd(meanArray)), type='l', 
+     xlab="Z", ylab='Density', col='red')
+
+print(mean(meanArray))
+print(sd(meanArray))
+```
+
+
+

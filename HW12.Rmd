@@ -1,0 +1,111 @@
+---
+title: "HW12"
+output: html_document
+date: "2023-11-28"
+---
+
+In this data set, renal.csv, we have urine samples for 40 dogs. It contains sodium samples contained once before (x) the administration of Mercuhydrin and once after (y). The first 10 dogs in this data set are the control group who were not administer with any Mercuhydrin and two samples were taken in different time periods. The remaining 30 dogs were administered this medication to see the difference in sodium levels in the kidneys post medication.
+
+
+```{r data setup, include = FALSE}
+library(rstatix)
+
+renal = read.csv('renal.csv', header = TRUE)
+
+```
+
+## Normality
+
+Checking the sodium levels for normality to see if a transformation is needed. The graph below on the right shows the sodium levels after medication (dependent variable). The distribution was not normal so a log transformation was performed as seen in the graph below on the left.
+
+```{r super cool graph, fig.show="hold", out.width="50%", echo=FALSE}
+
+hist(renal$y, main="Before Transformation", xlab="Sodium Levels", freq=FALSE)
+
+renal$y_log <- log(renal$y)
+hist(renal$y_log, main="After log Transformation", xlab="Sodium Levels", freq=FALSE)
+
+```
+Using the Shapiro-Wilk test on the data we can determine how close the data is to normality and if we needed to perform the transformation or not. For this test the p-value needs to be higher than 0.05 to be considered to have normality. The p-value for the transformed data in 0.0274. The p-value of the transformed data is 0.902. The transformed data is significantly higher than the needed 0.05, so as we can see the transformation was needed. The data for variable x was also transformed using log after this conclusion to keep consistency between variables.
+```{r normality check}
+
+renal$y_log <- log(renal$y)
+renal$x_log <- log(renal$x)
+renal$grp_dummy <- as.factor(renal$grp)
+
+shapiro_test(renal$y)
+shapiro_test(renal$y_log)
+```
+__________________________________________________________________________________________________________________________________________________________________________________
+
+## Fitting the Model With Interaction
+
+*y* = $\beta$~0~ + $\beta$~1~*X*~1~ + $\beta$~2~*X*~2~ + $\gamma$*X*~1~*X*~2~
+
+Fitting the model based on the log transformation of the data with the purpose of evaluating relationships, the efficiency of the medication, and the statistical significance of certain aspects of the data. Specifically looking at the interaction of x_log:grp is considered statistically significant in order to reject the null hypothesis or not.
+
+H~0~: $\gamma$ = 0
+
+
+```{r fitting the model with interaction}
+model_inter <- lm(y_log ~ x_log * grp_dummy, data = renal)
+summary(model_inter)
+```
+**Interaction:** The interaction coefficient for x_log:grp is 0.4325 with a p-value of 0.2338.This indicates no significant interactions between the baseline (x) and the groups (control vs. medicated). The interaction is considered not statistically significant, so we cannot reject the null hypothesis based of these results. 
+
+
+```{r interaction anova}
+anova(model_inter)
+```
+_______________________________________________________________________________________________________________________________________________________________________________________
+
+## Fitting the Model Without Interaction
+
+*y* = $\beta$~0~ + $\beta$~1~*X*~1~ + $\beta$~2~*X*~2~ + $\epsilon$
+
+In the previous section, it was concluded that we could not reject the null hypothesis for the model with interaction. We will now look at the relationship of______ and determine if we need to reject the null hypothesis or not.
+
+
+H~0~: $\beta$~1~ = 0       or      H~0~: $\beta$~2~ = 0 
+
+
+```{r fitting the model without interaction}
+
+model_no_inter <- lm(y_log ~ x_log + grp_dummy, data = renal)
+summary(model_no_inter)
+
+```
+**Results:** The coefficient for x_log was 0.5554 with a p-value of 0.00190.This indicates that x_log is statistically significant to y_log. The coefficient for grp or group is 0.2271 with a p-value of 0.06027. This indicates that there is a weak relationship between group and y_log (post-baseline) as its not statistically significant enough as the p-value is just above 0.05.
+
+
+As the model with interaction was deemed statistically insignificant we will use the results from the model without interaction
+
+
+**H~0~: $\beta$~1~ = 0**
+
+The null hypothesis looks at the initial sodium levels in the dogs urine (baseline or x) to see if it has impacts on the sodium levels after the medication was administered. The baseline is statistically significant with a p-value of 0.00190, indicating the rejection of the null hypothesis. Demonstrating that there is a relationship between the baseline (x) and the post-baseline(y).
+
+**H~0~: $\beta$~2~ = 0**
+
+The null hypothesis looks at the impact on the sodium level post-baseline (y) compared to the control or the medicated groups. The groups p-value was 0.06027, which indicates that there is a weak relationship but not enough to make it statistically significant. As a result, we cannot reject this null hypothesis and our results have shown that the relationship between the post-baseline sodium level and the medication are not strong enough.
+
+**Conclusion**
+
+One of the two null hypothesis were rejected. As the results show a relationship between the baseline and post-baseline, but no relationship in terms of the groups. With no relationship between groups and the post-baseline, this indicates that the medication Mercuhydrin does have an impact on the change in sodium levels of a dogs kidneys. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

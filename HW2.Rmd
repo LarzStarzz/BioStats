@@ -1,0 +1,77 @@
+---
+title: "HW2"
+output: html_document
+date: "2023-09-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Two-group Comparisons
+
+Loads the information from the given data set "bodyfat" and assigns variables to the specific columns for body fat percentage and gender.
+
+```{r bodyfat}
+bodyfat <- read.csv('bodyfat.csv', header=FALSE)
+colnames(bodyfat) <- c("fatpercent", "gender")
+```
+
+
+H0: There is no noticible difference in body fat percentages between males and females
+
+Ha: There is a noticible different in the body fat percentages between males and females
+
+Using a two-sided hypothesis is based on the null hypothesis. We are testing to see if one gender has significantly difference in either direction. This is based on the presumption of no significant expectations before conducting the tests.
+
+
+
+
+```{r test}
+
+bodyfat <- read.csv('bodyfat.csv', header=FALSE)
+colnames(bodyfat) <- c("fatpercent", "gender")
+
+t_test <- t.test(fatpercent ~ gender, data = bodyfat)
+
+t_statistic <- t_test$statistic
+conf_interval <- t_test$conf.int
+```
+
+Based of the confidence interval being 95% we can say that the alpha level is 0.05
+```{r alpha level}
+print(conf_interval)
+```
+
+Results previous code which give us the t and p value which will be used to evalute and determine if we reject the null hypothesis or not
+
+```{r results}
+cat("t-value:", t_statistic)
+cat("P-Value:", t_test$p.value)
+```
+## Results
+t value: -2.895794
+
+P value: 0.00864976
+
+alpha level: 0.05
+
+Based on the given information from the data set there is a difference in body fat percentages, as a result the null hypothesis is rejected.
+
+When looking at the p value compared to the chosen alpha value. The p value is significantly less than the alpha value which means that we can reject the null hypothesis. When looking at this in terms of our two sided hypothesis, it means that we are rejecting the fact that there is no significant different between men and women for higher percentage or lower percentage.
+
+## Two-sided Confidence Interval
+When looking at the graph with the two sided confidence intervals we can see that there is enough data in both side of the rejection region to conclude that we needed a two-sided hypothesis. Based on the alpha level compared to the calculated p level we can conclude to reject the null hypothesis.
+
+```{r confidence interval}
+degfreedom <- (13+10)-2
+
+plot(seq(-3, 3, by=0.01), dt(seq(-3, 3, by=0.01), degfreedom), type="l", xlab="T", ylab="Density")
+abline(v=c(qnorm(0.025), qnorm(0.975)), col="red")
+
+text(-2.5,0.175, expression(2.5~symbol("\045")))
+text(2.5,0.175, expression(2.5~symbol("\045")))
+
+
+```
+
