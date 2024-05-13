@@ -70,8 +70,10 @@ plot(seq(-3, 3, by=0.01), dt(seq(-3, 3, by=0.01), degfreedom), type="l", xlab="T
 abline(v=c(qnorm(0.025), qnorm(0.975)), col="red")
 
 text(-2.5,0.175, expression(2.5~symbol("\045")))
-text(2.5,0.175, expression(2.5~symbol("\045")))
+text(2.5,0.999, expression(2.5~symbol("\045")))
 
 
 ```
-
+## Hello, world
+* bullet 1
+* bullet 2
